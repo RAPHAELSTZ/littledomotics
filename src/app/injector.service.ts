@@ -2,11 +2,16 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
+
+interface DeviceInformation {
+  status: boolean;
+  temperature: number;
+  voltage: number;
+}
+
 interface Device {
   id: number;
-  status: Observable<boolean>;
-  temperature: Observable<number>;
-  voltage: Observable<number>;
+  information: BehaviorSubject<DeviceInformation>
 }
 
 @Injectable({
@@ -22,29 +27,39 @@ export class InjectorService {
 
     const device1: Device = {
       id: 1,
-      temperature: new BehaviorSubject<number>(0),
-      voltage: new BehaviorSubject<number>(220),
-      status: new BehaviorSubject<boolean>(false)
+      information: new BehaviorSubject<DeviceInformation>({
+        temperature: 0,
+        voltage: 220,
+        status: false
+      })
     }
 
     const device2: Device = {
       id: 2,
-      temperature: new BehaviorSubject<number>(0),
-      voltage: new BehaviorSubject<number>(220),
-      status: new BehaviorSubject<boolean>(false)
+      information: new BehaviorSubject<DeviceInformation>({
+        temperature: 0,
+        voltage: 220,
+        status: false
+      })
     }
 
     const device3: Device = {
       id: 3,
-      temperature: new BehaviorSubject<number>(0),
-      voltage: new BehaviorSubject<number>(220),
-      status: new BehaviorSubject<boolean>(false)
+      information: new BehaviorSubject<DeviceInformation>({
+        temperature: 0,
+        voltage: 220,
+        status: false
+      })
     }
 
     //Default devices array
     this.devices = [device1, device2, device3]
     this.updateListDevicesObservable();
-    this.updateDeviceValue(device3, "status", true)
+    this.updateDeviceValue(device3, { 
+      temperature: 19,
+      voltage: 219,
+      status: true
+    })
 
     this.listDevices$.subscribe(
       res => {
@@ -59,30 +74,40 @@ export class InjectorService {
   /*
     Update list devices observable
   */
-  public updateListDevicesObservable(sortAscending:Boolean = true) {
+  public updateListDevicesObservable(sortAscending: Boolean = true) {
     const sortedDevices = this.devices.slice().sort((a, b) => sortAscending ? a.id - b.id : b.id - a.id);
 
     this.listDevices$ = combineLatest(
       sortedDevices.map(device =>
         combineLatest([
-          device.status,
-          device.temperature,
-          device.voltage
+          device.information
         ]).pipe(
-          map(([status, temperature, voltage]: [boolean, number, number]) => ({ id: device.id, status, temperature, voltage })),
-          tap( (show:any) => console.log("Demo combine latest: ", show))
-        
-          )
-      )
+          map(([information]: [DeviceInformation]) => ({ id: device.id,  information })),
+          tap((show: any) => console.log("Demo combine latest: ", show))
+
+        ) )
     );
+    
   }
+
+  /*
+    ON/OFF
+  */
+ turnOnOff(device_id:number, device:DeviceInformation ){ 
+    //Find index for id:
+    let index = this.devices.findIndex( (device) => device.id === device_id)
+    this.updateDeviceValue(this.devices[index],  {
+      ...device, status: !device.status
+    })
+
+ }
 
   /* 
     To update an observable property of any device
   */
-  updateDeviceValue<T extends boolean | number>(device: Device, property: keyof Device, value: T) {
-    const subject = device[property] as BehaviorSubject<T>;
-    console.log(device[property])
+  updateDeviceValue(device: Device, value: DeviceInformation) {
+    const subject = device["information"] as BehaviorSubject<DeviceInformation>;
+ 
     if (subject)
       subject.next(value);
   }
@@ -91,11 +116,14 @@ export class InjectorService {
     Add a Device
   */
   addDevice(device_id: number) {
-    const newDevice: Device= {
+    const newDevice: Device = {
       id: device_id,
-      temperature: new BehaviorSubject<number>(0),
-      voltage: new BehaviorSubject<number>(220),
-      status: new BehaviorSubject<boolean>(false)
+      information: new BehaviorSubject<DeviceInformation>({
+        temperature: 0,
+        voltage: 220,
+        status: false
+      })
+
     }
     this.devices.push(newDevice);
     this.updateListDevicesObservable();
@@ -126,8 +154,12 @@ export class InjectorService {
   stressTest() {
     this.devices.forEach(
       device => {
-        const highVoltage = Math.round(Math.random()*899)
-        this.updateDeviceValue(device, "voltage", highVoltage)
+        const highVoltage = Math.round(Math.random() * 899)
+        this.updateDeviceValue(device, {
+          temperature: 0, 
+          status: true,
+          voltage: highVoltage
+        })
       }
     )
   }

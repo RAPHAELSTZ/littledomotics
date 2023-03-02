@@ -9,15 +9,15 @@
     </ion-item-divider>
     </ion-item>
     <ion-item>
-      <ion-label>Temperature : {{ device.temperature }}</ion-label>
+      <ion-label>Temperature : {{ device.information.temperature }}</ion-label>
     </ion-item>
     <ion-item>
-      <ion-label>Voltage : {{ device.voltage }} Volts</ion-label>
+      <ion-label>Voltage : {{ device.information.voltage }} Volts</ion-label>
     </ion-item>
     <ion-item>
-      <ion-label>Status : {{ device.status }}</ion-label>
-      <ion-toggle *ngIf="!device.status" [checked]="device.status" (click)="deviceInjector.updateDeviceValue(deviceInjector.devices[i], 'status', true)"></ion-toggle>
-      <ion-toggle *ngIf="device.status" [checked]="device.status" (click)="deviceInjector.updateDeviceValue(deviceInjector.devices[i], 'status', false)"></ion-toggle>
+      <ion-label>Status : {{ device.information.status }}</ion-label>
+      <ion-toggle  [checked]="device.information.status" (click)="deviceInjector.turnOnOff(device.id, device.information)"></ion-toggle>
+      <!-- <ion-toggle *ngIf="device.status" [checked]="device.status" (click)="deviceInjector.turnOnOff(device.id, device)"></ion-toggle> -->
     </ion-item>
 
   </ion-item-group>
