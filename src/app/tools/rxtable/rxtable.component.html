@@ -26,5 +26,20 @@
   <ion-button (click)="deviceInjector.addDevice(deviceInjector.devices.length+1)" expand="block">Add sensor</ion-button>
   <ion-button (click)="deviceInjector.stressTest()" color="warning" expand="block">Survoltage</ion-button>
 
+  <ion-list *ngFor="let thing of deviceInjector.sortedDevices$| async; let i = index">
+    <ion-item-group>
+   <ion-item>
+     <ion-item-divider>
+     <ion-label>ID: {{ thing.id }}</ion-label>
+   </ion-item-divider>
+   </ion-item>
+   <ion-item>
+     <ion-label>Value : {{ thing.information.value.value }}</ion-label>
+   </ion-item>
+    
+
+ </ion-item-group>
+ </ion-list>
+
 </p>
 
